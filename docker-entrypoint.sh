@@ -2,12 +2,16 @@
 set -e
 
 # ─── Validate required env vars ───────────────────────────────────────
-for var in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB NAN_API_KEY LITELLM_MASTER_KEY; do
+for var in NAN_API_KEY LITELLM_MASTER_KEY; do
   if [ -z "${!var}" ]; then
     echo "ERROR: $var is not set" >&2
     exit 1
   fi
 done
+
+POSTGRES_USER="${POSTGRES_USER:-postgres}"
+POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-postgres}"
+POSTGRES_DB="${POSTGRES_DB:-gbrain}"
 
 # ─── PostgreSQL setup ─────────────────────────────────────────────────
 PGDATA="/data/pg"

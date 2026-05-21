@@ -4,9 +4,6 @@ services:
     ports:
       - "8080:80"
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - POSTGRES_DB=${POSTGRES_DB:-gbrain}
       - NAN_API_KEY=${NAN_API_KEY}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - PUBLIC_URL=${PUBLIC_URL:-}
