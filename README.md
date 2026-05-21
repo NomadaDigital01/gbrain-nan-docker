@@ -10,7 +10,7 @@ Deploy [gbrain](https://github.com/garrytan/gbrain) con [api.nan.builders](https
 | **LiteLLM** | Proxy que traduce OpenAI-compatible → nan.builders |
 | **anthropic-shim** | Normalizador de paths para los SDKs Anthropic que usa gbrain |
 | **nginx** | Reverse proxy con soporte SSE (embebido en el mismo contenedor) |
-| **Postgres + pgvector** | Base de datos con búsqueda vectorial |
+| **Postgres + pgvector** | Base de datos con búsqueda vectorial (embebida) |
 
 ## Requisitos
 
@@ -29,6 +29,8 @@ Servicios:
 - **Admin dashboard**: `http://localhost:8080/admin/`
 - **MCP endpoint**: `http://localhost:8080/mcp`
 - **Health**: `http://localhost:8080/health`
+
+PostgreSQL arranca automáticamente dentro del contenedor. Los datos persisten en el volumen `gbrain-data` (montado en `/data`).
 
 ## Configuración
 

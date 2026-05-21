@@ -1,12 +1,14 @@
 FROM oven/bun:1
 
-# Install Python 3 + pip for LiteLLM
+# Install Python 3 + pip for LiteLLM + PostgreSQL + pgvector
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-venv \
     curl \
     nginx \
+    postgresql-17 \
+    postgresql-17-pgvector \
     && rm -rf /var/lib/apt/lists/*
 
 # Install LiteLLM proxy globally

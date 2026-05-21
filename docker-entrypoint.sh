@@ -2,15 +2,65 @@
 set -e
 
 # ─── Validate required env vars ───────────────────────────────────────
-for var in DATABASE_URL NAN_API_KEY LITELLM_MASTER_KEY; do
+for var in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB NAN_API_KEY LITELLM_MASTER_KEY; do
   if [ -z "${!var}" ]; then
     echo "ERROR: $var is not set" >&2
     exit 1
   fi
 done
 
+# ─── PostgreSQL setup ─────────────────────────────────────────────────
+PGDATA="/data"
+PGCONF="/etc/postgresql/17/main"
+
+if [ ! -f "$PGDATA/PG_VERSION" ]; then
+  echo "[entrypoint] Initializing PostgreSQL cluster at $PGDATA ..."
+  mkdir -p "$PGDATA"
+  chown postgres:postgres "$PGDATA"
+  chmod 700 "$PGDATA"
+  # Symlink so pg_ctlcluster finds the right config
+  rm -rf "$PGCONF"
+  mkdir -p "$(dirname $PGCONF)"
+  ln -s "$PGDATA" "$PGCONF"
+  su - postgres -c "/usr/lib/postgresql/17/bin/initdb -D $PGDATA --encoding=UTF8 --locale=C"
+  # Configure for password auth on localhost TCP
+  cat >> "$PGDATA/pg_hba.conf" <<'EOF'
+host all all 127.0.0.1/32 md5
+host all all ::1/128 md5
+EOF
+  echo "listen_addresses = '127.0.0.1'" >> "$PGDATA/postgresql.conf"
+else
+  echo "[entrypoint] Found existing PostgreSQL cluster at $PGDATA"
+fi
+
+echo "[entrypoint] Starting PostgreSQL on :5432 ..."
+su - postgres -c "/usr/lib/postgresql/17/bin/pg_ctl -D $PGDATA -l /tmp/pg.log start"
+
+# Wait for PostgreSQL to accept connections
+for i in $(seq 1 15); do
+  if su - postgres -c "psql -c 'SELECT 1' template1" >/dev/null 2>&1; then
+    echo "[entrypoint] PostgreSQL is ready"
+    break
+  fi
+  if [ "$i" -eq 15 ]; then
+    echo "[entrypoint] ERROR: PostgreSQL did not start" >&2
+    exit 1
+  fi
+  sleep 1
+done
+
+# Create user and database if not exist
+su - postgres -c "psql -tc \"SELECT 1 FROM pg_roles WHERE rolname='${POSTGRES_USER}'\"" | grep -q 1 || \
+  su - postgres -c "psql -c \"CREATE ROLE ${POSTGRES_USER} LOGIN SUPERUSER BYPASSRLS PASSWORD '${POSTGRES_PASSWORD}'\""
+su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname='${POSTGRES_DB}'\"" | grep -q 1 || \
+  su - postgres -c "createdb -O ${POSTGRES_USER} ${POSTGRES_DB}"
+su - postgres -c "psql ${POSTGRES_DB} -tc \"SELECT 1 FROM pg_extension WHERE extname='vector'\"" | grep -q 1 || \
+  su - postgres -c "psql ${POSTGRES_DB} -c 'CREATE EXTENSION IF NOT EXISTS vector'"
+
+export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5432/${POSTGRES_DB}"
+
 # ─── Setup directories ────────────────────────────────────────────────
-GBRAIN_HOME="${GBRAIN_HOME:-/root/.gbrain}"
+GBRAIN_HOME="/data/.gbrain"
 mkdir -p "$GBRAIN_HOME"
 
 # ─── Write gbrain config.json ─────────────────────────────────────────
