@@ -21,28 +21,30 @@ Deploy [gbrain](https://github.com/garrytan/gbrain) con [api.nan.builders](https
 
 ```bash
 cp .env.example .env
-# Editar .env con tu NAN_API_KEY
+# Editar .env con tu NAN_API_KEY y LITELLM_MASTER_KEY
 docker compose up -d
 ```
 
-Servicios:
 - **Admin dashboard**: `http://localhost:8080/admin/`
 - **MCP endpoint**: `http://localhost:8080/mcp`
 - **Health**: `http://localhost:8080/health`
 
-PostgreSQL arranca automáticamente dentro del contenedor. Los datos persisten en el volumen `gbrain-data` (montado en `/data`).
+PostgreSQL arranca automáticamente dentro del contenedor. Los datos persisten en el volumen `gbrain-data` montado en `/data`.
+
+```
+/data/
+├── pg/             ← cluster PostgreSQL (tablas, schemas, WAL)
+└── gbrain-home/    ← configuración, auditoría, evaluaciones, clones
+```
 
 ## Configuración
 
 ### `.env`
 
 ```env
+NAN_API_KEY=sk-...                          # Tu API key de nan.builders (obligatorio)
+LITELLM_MASTER_KEY=sk-local-...            # Clave maestra del proxy LiteLLM (obligatorio)
 PUBLIC_URL=https://gbrain.tudominio.com    # Opcional. Para exponer con HTTPS
-NAN_API_KEY=sk-...                          # Tu API key de nan.builders
-LITELLM_MASTER_KEY=sk-local-...            # Clave maestra del proxy LiteLLM
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=cambia-esta-pass
-POSTGRES_DB=gbrain
 ```
 
 ### Modelos
