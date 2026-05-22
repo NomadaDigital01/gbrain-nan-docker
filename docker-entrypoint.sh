@@ -154,7 +154,7 @@ nginx -g 'daemon off;' &
 # ─── Build command with optional flags ─────────────────────────────────
 GBRAIN_CMD=("$@")
 if [ -n "$PUBLIC_URL" ]; then
-  GBRAIN_CMD+=("--public-url" "$PUBLIC_URL")
+  GBRAIN_CMD+=("--public-url" "$PUBLIC_URL" "--enable-dcr")
 fi
 
 # ─── Execute the command ──────────────────────────────────────────────
