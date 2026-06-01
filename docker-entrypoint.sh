@@ -134,14 +134,17 @@ export DATABASE_URL="$SAVED_DATABASE_URL"
 
 # ─── Run migrations ───────────────────────────────────────────────────
 echo "[entrypoint] Running gbrain migrations ..."
-gbrain apply-migrations --yes --non-interactive 2>/dev/null || true
+# DESACTIVADO: gbrain apply-migrations consume ~850MB Bun runtime pico (OOM con 2GB mem_limit cuando suma LiteLLM+Postgres).
+# Migrations se corren manualmente con: docker exec <container> gbrain apply-migrations --yes
+# echo "[entrypoint] Skipping migrations (run manually if needed)"
 
 # ─── Apply tier routing (DB-backed) ───────────────────────────────────
 echo "[entrypoint] Applying tier routing ..."
-gbrain config set models.default claude-sonnet-4-6 2>/dev/null || true
-gbrain config set models.tier.utility claude-haiku-4-5-20251001 2>/dev/null || true
-gbrain config set models.tier.reasoning claude-sonnet-4-6 2>/dev/null || true
-gbrain config set models.tier.deep claude-sonnet-4-6 2>/dev/null || true
+# DESACTIVADO (~850MB pico cada gbrain CLI invocation):
+# gbrain config set models.default claude-sonnet-4-6 (ya esta en config.json)
+# gbrain config set models.tier.utility claude-haiku-4-5-20251001 (configured via config.json)
+# gbrain config set models.tier.reasoning claude-sonnet-4-6 (configured via config.json)
+# gbrain config set models.tier.deep claude-sonnet-4-6 (configured via config.json)
 
 # ─── Start nginx reverse proxy ────────────────────────────────────────
 echo "[entrypoint] Starting nginx on :80 ..."
