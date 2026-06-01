@@ -1,8 +1,8 @@
 services:
   gbrain:
     build: .
-    ports:
-      - "8080:80"
+    expose:
+      - "80"
     environment:
       - NAN_API_KEY=${NAN_API_KEY}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
