@@ -9,7 +9,9 @@ services:
       - PUBLIC_URL=${PUBLIC_URL:-}
     volumes:
       - gbrain-data:/data
-    restart: unless-stopped
+    mem_limit: 1g
+    mem_reservation: 512m
+    restart: on-failure:3
 
 volumes:
   gbrain-data:
