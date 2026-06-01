@@ -124,24 +124,9 @@ for i in $(seq 1 30); do
   sleep 1
 done
 
-# ─── Start anthropic-shim ─────────────────────────────────────────────
-echo "[entrypoint] Starting anthropic-shim on :4001 ..."
-bun run /etc/gbrain/litellm/anthropic-shim.ts &
-SHIM_PID=$!
-
-# Wait for shim to be ready
-echo "[entrypoint] Waiting for anthropic-shim to be ready ..."
-for i in $(seq 1 30); do
-  if curl -sf -o /dev/null -w "%{http_code}" http://localhost:4001/ 2>/dev/null | grep -qE '^[23]'; then
-    echo "[entrypoint] anthropic-shim is ready"
-    break
-  fi
-  if [ "$i" -eq 30 ]; then
-    echo "[entrypoint] ERROR: anthropic-shim did not become ready in 30s" >&2
-    exit 1
-  fi
-  sleep 1
-done
+# ─── anthropic-shim ahora vive en nginx (puerto 4001), no bun extra ────────
+# El bun extra consumia ~150MB y causaba OOM en hosts con poca RAM.
+# nginx ya escucha en 4001 con path rewrites (ver nginx.conf).
 
 # ─── Restore DATABASE_URL for gbrain ──────────────────────────────────
 # LiteLLM doesn't need it (we unset it above), but gbrain does.
@@ -171,3 +156,4 @@ fi
 # ─── Execute the command ──────────────────────────────────────────────
 echo "[entrypoint] Starting: ${GBRAIN_CMD[*]}"
 exec "${GBRAIN_CMD[@]}"
+
