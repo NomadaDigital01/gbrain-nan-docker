@@ -75,7 +75,7 @@ su - postgres -c "psql ${POSTGRES_DB} -tc \"SELECT 1 FROM pg_extension WHERE ext
 export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5432/${POSTGRES_DB}"
 
 # ─── Setup directories ────────────────────────────────────────────────
-GBRAIN_HOME="/data/gbrain-home"
+GBRAIN_HOME="/root/.gbrain"
 mkdir -p "$GBRAIN_HOME"
 
 # ─── Write gbrain config.json ─────────────────────────────────────────
@@ -83,12 +83,13 @@ cat > "$GBRAIN_HOME/config.json" <<EOF
 {
   "engine": "postgres",
   "database_url": "${DATABASE_URL}",
-  "embedding_model": "litellm:qwen3-embedding",
+  "embedding_model": "openai:qwen3-embedding",
   "embedding_dimensions": 1536,
   "chat_model": "litellm:qwen3.6",
   "expansion_model": "litellm:qwen3.6",
   "provider_base_urls": {
-    "litellm": "http://localhost:4000"
+    "litellm": "http://localhost:4000",
+    "openai": "https://api.nan.builders/v1"
   }
 }
 EOF

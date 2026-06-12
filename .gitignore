@@ -1,1 +1,4 @@
-.env
+.env*.bak-*
+*.tgz
+docker-entrypoint.sh.bak*
+docker-compose.override.yml.bak*
